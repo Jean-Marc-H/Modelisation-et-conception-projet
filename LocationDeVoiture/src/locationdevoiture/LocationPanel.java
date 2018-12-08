@@ -518,41 +518,6 @@ public class LocationPanel extends javax.swing.JPanel {
         Controller.confirmationLocation(this, confirmer);
     }//GEN-LAST:event_payerLocationButtonActionPerformed
 
-    private void calculLocationButtonActionPerformed(java.awt.event.ActionEvent evt){
-        double total=0;
-        int jours=0;
-        //Multiplicateur de durée
-        if(dureeComboBox.getSelectedItem()=="Jour"){
-            jours=1;
-        }
-        else if(dureeComboBox.getSelectedItem()=="Semaine"){
-            jours=7;
-        }
-        else{
-            jours=30;
-        }
-        //Montant par classe
-        if(classeComboBox.getSelectedItem()=="Economique"){
-            total+=41*jours;
-        }
-        else if(classeComboBox.getSelectedItem()=="Moyenne"){
-            total+=52*jours;
-        }
-        else if(classeComboBox.getSelectedItem()=="Confort"){
-            total+=63*jours;
-        }
-        else if(classeComboBox.getSelectedItem()=="Luxe"){
-            total+=104*jours;
-        }
-        else{
-            total+=93*jours;
-        }
-        if(supplementPoliceButton.isSelected()){
-            total+=18.4*jours;
-        }
-        jLabel25.setText(total+"");
-    }
-    
     private JPanel annuler;
     private JPanel confirmer;
     // Variables declaration - do not modify//GEN-BEGIN:variables
