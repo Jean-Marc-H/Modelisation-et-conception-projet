@@ -32,6 +32,49 @@ public class Database {
 
     protected static final String ConnectionString = "jdbc:sqlite:../Database/Location.db";
 
+    public void databaseInit(){
+        try{
+        ResultSet locationExists=this.checkIfTableExists("LOCATION");
+        if(!locationExists.next()){
+            //CREATE LOCATION TABLE
+            
+            //INSERT LOCATION DATA (APRES TABLE)
+        }
+        ResultSet clientExists=this.checkIfTableExists("CLIENT");
+        if(!clientExists.next()){
+            //CREATE CLIENT TABLE
+            
+            //INSERT CLIENT DATA (APRES TABLE)
+        }
+        ResultSet vehiculeExists=this.checkIfTableExists("VEHICULE");
+        if(!vehiculeExists.next()){
+            //CREATE VEHICULE TABLE
+            
+            //INSERT VEHICULE DATA (APRES TABLE)
+        }
+        ResultSet paiementExists=this.checkIfTableExists("PAIEMENT");
+        if(!paiementExists.next()){
+            //CREATE PAIEMENT TABLE
+            
+            //INSERT PAIEMENT DATA (APRES TABLE)
+        }
+        ResultSet supplementExists=this.checkIfTableExists("SUPPLEMENT");
+        if(!supplementExists.next()){
+            //CREATE SUPPLEMENT TABLE
+            
+            //INSERT SUPPLEMENT DATA (APRES TABLE)
+        }
+        ResultSet employeExists=this.checkIfTableExists("EMPLOYE");
+        if(!employeExists.next()){
+            //CREATE EMPLOYE TABLE
+            
+            //INSERT EMPLOYE DATA (APRES TABLE)
+        }}
+        catch(SQLException ex){
+            System.out.println(ex.getMessage());
+        }
+    }
+    
     protected Connection Connect() {
         Connection cnx = null;
         try {
