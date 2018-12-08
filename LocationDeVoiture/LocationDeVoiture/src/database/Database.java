@@ -11,7 +11,6 @@ et les employ�s afin de donner les bonnes permissions aux bons employ�s.
 
 **/
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,16 +40,6 @@ public class Database {
         }
 
         return cnx;
-    }
-    
-    public ResultSet checkIfTableExists(String tableName){
-        try(Connection cnx = this.Connect();){
-            DatabaseMetaData metaData=cnx.getMetaData();
-            return metaData.getTables(null, null, tableName, null);
-        }catch (SQLException ex) {
-            System.out.println(ex.getMessage());
-            return null;
-        }
     }
 
     protected int GetInsertedId(PreparedStatement statement) throws SQLException {
