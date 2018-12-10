@@ -15,6 +15,7 @@ import java.sql.SQLException;
  */
 public class LocationDeVoiture {
     public static Database database;
+    
     public static void main(String[] args) {
         LocationDeVoitureFrame ldv = new LocationDeVoitureFrame();
         ldv.setVisible(true);

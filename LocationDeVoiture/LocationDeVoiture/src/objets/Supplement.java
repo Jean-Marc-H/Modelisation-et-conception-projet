@@ -10,7 +10,7 @@ package objets;
  * @author JeanMarc
  */
 public class Supplement {
-    private int LocationId;
+    private int locationId;
     private boolean assuranceAchete;
     //0=500 kilomètres gratuit, 1=kilometrage illimite
     private int forfaitDistance;
@@ -20,11 +20,11 @@ public class Supplement {
     private double reparations;
 
     public int getLocationId() {
-        return LocationId;
+        return locationId;
     }
 
     public void setLocationId(int locationId) {
-        LocationId = locationId;
+        this.locationId = locationId;
     }
 
     public boolean isAssuranceAchete() {

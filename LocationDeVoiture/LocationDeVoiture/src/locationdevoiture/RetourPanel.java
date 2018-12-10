@@ -5,10 +5,20 @@
  */
 package locationdevoiture;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import objets.Location;
+import objets.Paiement;
+import objets.Supplement;
+import objets.Vehicule;
 
 /**
  *
@@ -27,7 +37,7 @@ public class RetourPanel extends javax.swing.JPanel {
     public String getSelectedButtonText(ButtonGroup buttonGroup) {
         for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
             AbstractButton button = buttons.nextElement();
-
+            
             if (button.isSelected()) {
                 return button.getText();
             }
@@ -517,6 +527,11 @@ public class RetourPanel extends javax.swing.JPanel {
         montantRetourPanel.setVisible(false);
 
         confirmerRetourButton.setText("Confirmer");
+        confirmerRetourButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmerRetourButtonActionPerformed(evt);
+            }
+        });
 
         annulerRetourButton.setText("Annuler");
         annulerRetourButton.addActionListener(new java.awt.event.ActionListener() {
@@ -574,6 +589,48 @@ public class RetourPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void calculRetourButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calculRetourButtonActionPerformed
+        int kilometrage=Integer.parseInt(getKilometrageVehicule());
+        double total=0;
+        if(supplement.getForfaitDistance()==0&&kilometrage>500){
+            total+=0.17*(kilometrage-500);
+        }
+        double prixJour=0;
+        if(vehicule.getClasse().equals("Economique")){
+            prixJour=41;
+        }
+        else if(vehicule.getClasse().equals("Moyenne")){
+            prixJour=52;
+        }
+        else if(vehicule.getClasse().equals("Confort")){
+            prixJour=63;
+        }
+        else if(vehicule.getClasse().equals("Luxe")){
+            prixJour=104;
+        }
+        else if(vehicule.getClasse().equals("Utilitaire")){
+            prixJour=93;
+        }
+        supplement.setEssenceManquant(100-Integer.parseInt(getNiveauEssence()));
+        deuxiemePaiement.setDatePaiement(getDateRetour());
+        deuxiemePaiement.setRaison("0");
+        String date=getDateRetour();
+        Calendar calendar=Calendar.getInstance();
+        calendar.set(Integer.parseInt(date.substring(0,2)),Integer.parseInt(date.substring(3,5)), Integer.parseInt(date.substring(6,10)));
+        if(calendar.getTime().getTime()>location.getDateRetour().getTime()){
+            long day=TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
+            int joursRetard=(int) ((int)(calendar.getTime().getTime()-location.getDateRetour().getTime())/day)+1;
+            total+=joursRetard*prixJour;
+        }
+        total+=(100-Double.parseDouble(getNiveauEssence()))/100*vehicule.getTailleReservoir()*1.22;
+        total+=Double.parseDouble(getEstimationReparation());
+        //calcul taxe
+        if(premierPaiement.getRaison().equals("300")){
+            total-=300;
+            deuxiemePaiement.setRaison("-300");
+        }
+        deuxiemePaiement.setMontant(total);
+        setDifference(total+"");
+        setTotal(total+premierPaiement.getMontant()+"");
         Controller.calculRetour(montantRetourPanel);
     }//GEN-LAST:event_calculRetourButtonActionPerformed
 
@@ -582,13 +639,79 @@ public class RetourPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_annulerRetourButtonActionPerformed
 
     private void chercherLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chercherLocationButtonActionPerformed
+        ResultSet locationData=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM LOCATION WHERE LOCATION_ID="+getNumeroLocation());
+        String vehiculePlaque="";
+        int clientId=0;
+        try{
+        if(!locationData.last()){
+            locationData=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM LOCATION WHERE VEHICULE="+getPlaque());
+        }
+        if(locationData.last()){
+            location.setLocationId(locationData.getInt("LOCATION_ID"));
+            location.setDateRetour((int)locationData.getTime("DATE_RETOUR").getTime());
+            vehiculePlaque=locationData.getString("VEHICULE");
+            clientId=locationData.getInt("CLIENT_ID");
+        }
+        ResultSet clientInfo=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM CLIENT WHERE CLIENT_ID="+clientId);
+        clientInfo.first();
+        setNom(clientInfo.getString("PRENOM")+" "+clientInfo.getString("NOM"));
+        setDateNaissance(clientInfo.getString("DATE_NAISSANCE"));
+        ResultSet paiementInfo=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM PAIEMENT WHERE LOCATION_ID="+location.getLocationId());
+        paiementInfo.first();
+        premierPaiement.setLocationId(location.getLocationId());
+        premierPaiement.setMontant(paiementInfo.getDouble("MONTANT"));
+        premierPaiement.setRaison(paiementInfo.getString("RAISON"));
+        setCaution(premierPaiement.getRaison()+".00");
+        setPremierPaiement(premierPaiement.getMontant()+"");
+        ResultSet supplementInfo=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM SUPPLEMENT WHERE LOCATION_ID="+location.getLocationId());
+        supplementInfo.first();
+        supplement.setLocationId(location.getLocationId());
+        supplement.setAssuranceAchete(supplementInfo.getBoolean("ASSURANCE"));
+        supplement.setForfaitDistance(supplementInfo.getInt("FORFAIT_DISTANCE"));
+        ResultSet vehiculeInfo=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM VEHICULE WHERE IMMATRICULATION="+vehiculePlaque);
+        vehiculeInfo.first();
+        vehicule.setVIN(vehiculeInfo.getString("VIN"));
+        vehicule.setClasse(vehiculeInfo.getString("CLASSE"));
+        vehicule.setTailleReservoir(vehiculeInfo.getInt("TAILLE_RESERVOIR"));
+        }
+        catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
         Controller.recherche(clientRetourPanel, vehiculeRetourPanel, paiementRetourPanel);
     }//GEN-LAST:event_chercherLocationButtonActionPerformed
 
     private void payerRetourButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_payerRetourButtonActionPerformed
-        Controller.paiement(confirmerRetourButton);
+        try {
+            Paiement paiement=new Paiement();
+            int methode=0;
+            if(getMethodePaiement().equals("Espece")){
+                methode=0;
+            }
+            else if(getMethodePaiement().equals("Debit")){
+                methode=1;
+            }
+            else if(getMethodePaiement().equals("Credit")){
+                methode=2;
+            }
+            deuxiemePaiement.setLocationId(location.getLocationId());
+            deuxiemePaiement.setMethode(methode);
+            LocationDeVoiture.database.AjouterPaiement(deuxiemePaiement);
+            Controller.paiement(confirmerRetourButton);
+        } catch (Exception ex) {
+            Logger.getLogger(RetourPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_payerRetourButtonActionPerformed
 
+    private void confirmerRetourButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmerRetourButtonActionPerformed
+        LocationDeVoiture.database.changeStatutVehicules(vehicule, 0);
+        Controller.confirmationRetour(this, confirmer);
+    }//GEN-LAST:event_confirmerRetourButtonActionPerformed
+
+    private Location location;
+    private Paiement premierPaiement;
+    private Paiement deuxiemePaiement;
+    private Supplement supplement;
+    private Vehicule vehicule;
     private JPanel annuler;
     private JPanel confirmer;
     // Variables declaration - do not modify//GEN-BEGIN:variables

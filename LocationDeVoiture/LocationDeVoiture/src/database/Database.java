@@ -86,6 +86,17 @@ public class Database {
         return cnx;
     }
     
+    public int getTableLength(String table){
+        ResultSet dummyTable=obtainResultsFromQuery("SELECT * FROM "+table);
+        try{
+            dummyTable.last();
+            return dummyTable.getRow();
+        }catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            return 0;
+        }
+    }
+    
     public ResultSet checkIfTableExists(String tableName){
         try(Connection cnx = this.Connect();){
             DatabaseMetaData metaData=cnx.getMetaData();
@@ -93,6 +104,28 @@ public class Database {
         }catch (SQLException ex) {
             System.out.println(ex.getMessage());
             return null;
+        }
+    }
+    
+    public ResultSet obtainResultsFromQuery(String query){
+        Statement stmt=null;
+        try(Connection cnx= this.Connect();){
+            stmt=cnx.createStatement();
+            return stmt.executeQuery(query);
+        }catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+    
+    public void changeStatutVehicules(Vehicule vehicule, int statut){
+        PreparedStatement stmt;
+        try(Connection cnx= this.Connect();){
+            stmt=cnx.prepareStatement("UPDATE VEHICULE SET STATUT="+statut+" WHERE VIN="+vehicule.getVIN());
+            stmt.executeUpdate();
+            stmt.close();
+        }catch (SQLException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
@@ -106,7 +139,7 @@ public class Database {
 
 
     public int AjouterLocation(Location data) throws Exception {
-        String SQL = "INSERT INTO LOCATION (DATE_RETOUR, LOCATION_A_L_AVANCE, DATE_HEURE_DEPART, ANNULEE, CLIENT_ID, EMPLOYE_ID, VEHICULE) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String SQL = "INSERT INTO LOCATION (LOCATION_ID, DATE_RETOUR, LOCATION_A_L_AVANCE, DATE_HEURE_DEPART, ANNULEE, CLIENT_ID, EMPLOYE_ID, VEHICULE) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         if (data.getDateRetour() == null ||
                 data.getTempDepart() == null ||
@@ -123,7 +156,7 @@ public class Database {
             statement.setBoolean(4, data.getAnnulee());
             statement.setInt(5, data.getClient().getClientId());
             statement.setInt(6, data.getEmploye().getNumeroEmploye());
-            statement.setString(7, data.getVehicule().getVIN());
+            statement.setString(7, data.getVehicule().getImmatriculation());
 
             statement.executeUpdate();
 
@@ -137,17 +170,17 @@ public class Database {
     }
 
     public int AjouterClient(Client data) throws Exception {
-        String SQL = "INSERT INTO CLIENT (NOM, PRENOM, ADRESSE, NUMERO_TELEPHONE, NUMERO_PERMIS, AGE) VALUES (?, ?, ?, ?, ?, ?)";
+        String SQL = "INSERT INTO CLIENT (NOM, PRENOM, ADRESSE, NUMERO_TELEPHONE, NUMERO_PERMIS, DATE_NAISSANCE) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection cnx = this.Connect();
                 PreparedStatement statement = cnx.prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, data.getNom());
             statement.setString(2, data.getPrenom());
-            statement.setString(3, data.getAdresse());
+            statement.setString(3, data.getAdresseCourriel());
             statement.setString(4, data.getTelephone());
-            statement.setString(5, data.getNumeroPermis());
-            statement.setInt(6, data.getAge());
+            statement.setDate(5, new java.sql.Date(data.getExpirationPermis().getTime()));
+            statement.setDate(6, new java.sql.Date(data.getDateNaissance().getTime()));
 
             statement.executeUpdate();
 

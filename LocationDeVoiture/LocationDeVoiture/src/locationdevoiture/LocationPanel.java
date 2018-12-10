@@ -5,17 +5,27 @@
  */
 package locationdevoiture;
 
+import database.Database;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
+import objets.Client;
+import objets.Location;
+import objets.Paiement;
+import objets.Supplement;
+import objets.Vehicule;
 
 /**
  *
  * @author jb_wi
  */
 public class LocationPanel extends javax.swing.JPanel {
-
     /**
      * Creates new form locationPanel
      */
@@ -55,6 +65,10 @@ public class LocationPanel extends javax.swing.JPanel {
     public void setPremierPaiement(String montant)
     {
         this.montantPremierVersementLabel.setText(montant);
+    }
+
+    public String getPremierPaiement(){
+        return this.montantPremierVersementLabel.getText();
     }
     
     public void setCaution(String montant)
@@ -259,14 +273,9 @@ public class LocationPanel extends javax.swing.JPanel {
                             .addComponent(jLabel7))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(informationLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(informationLocationPanelLayout.createSequentialGroup()
-                                .addComponent(classeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(95, 95, 95))
-                            .addGroup(informationLocationPanelLayout.createSequentialGroup()
-                                .addGroup(informationLocationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(dureeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(dateFormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(77, 77, 77))))
+                            .addComponent(classeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dureeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dateFormattedTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(informationLocationPanelLayout.createSequentialGroup()
                         .addComponent(assuranceLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -647,21 +656,252 @@ public class LocationPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_annulerLocationButtonActionPerformed
 
     private void payerLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_payerLocationButtonActionPerformed
-        Controller.paiement(confirmerLocationButton);
+                Controller.paiement(confirmerLocationButton);
     }//GEN-LAST:event_payerLocationButtonActionPerformed
 
     private void calculLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_calculLocationButtonActionPerformed
+        int total=0;
+        int multiplicateur=0;
+        //Mode de paiement
+        if(getModePaiement().equals("Especes")){
+            setCaution("300");
+        }
+        else{
+            setCaution("0");
+        }
+        //Duree Location
+        if(getDureeLocation().equals("Jour")){
+            multiplicateur=1;
+        }
+        else if(getDureeLocation().equals("Semaine")){
+            multiplicateur=7;
+        }
+        else if(getDureeLocation().equals("mois")){
+            int mois=Integer.parseInt(getDateDeLocation().substring(3,5));
+            if(mois==1||mois==3||mois==5||mois==7||mois==8||mois==10||mois==12){
+                multiplicateur=31;
+            }
+            else if(mois==2){
+                int annee=Integer.parseInt(getDateDeLocation().substring(8,10));
+                if(annee%4==0){
+                    multiplicateur=29;
+                }
+                else{
+                    multiplicateur=28;
+                }
+            }
+            else{
+                multiplicateur=30;
+            }
+        }
+        else {
+            return;
+        }
+        //Assurance
+        if(getAssurance().equals("Personnelle")){
+
+        }
+        else if(getAssurance().equals("Supplementaire")){
+            //total+=montantSupplementaire;
+        }
+        else {
+            return;
+        }
+        //Frais d'usure
+        if(getUsure().equals("500")){
+            //total+=montantNonIllimite;
+        }
+        else if(getUsure().equals("illimité")){
+            //total+=montantIllimite;
+        }
+        else{
+            return;
+        }
+        //Classe
+        if(getClasse().equals("Economique")){
+            //total+=economique*multiplicateur;
+        }
+        else if(getClasse().equals("Moyenne")){
+            //total+=moyenne*multiplicateur;
+        }
+        else if(getClasse().equals("Confort")){
+            //total+=confort*multiplicateur;
+        }
+        else if(getClasse().equals("Luxe")){
+            //total+=luxe*multiplicateur;
+        }
+        else if(getClasse().equals("Utilitaire")){
+            //total+=utilitaire*multiplicateur;
+        }
+        setPremierPaiement(total+"");
         Controller.calculLocation(montantPaiementLocationPanel);
     }//GEN-LAST:event_calculLocationButtonActionPerformed
 
     private void choixVehiculeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_choixVehiculeButtonActionPerformed
-        Controller.choixVehicule(vehiculeLocationPanel);
+        int nombreVehicules;
+        String nomVehicule="";
+        String listeVehicules[];
+        try{
+            ResultSet vehicules=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM VEHICULES WHERE CLASSE="+getClasseVehicule()+" AND STATUT=0");
+            nombreVehicules=LocationDeVoiture.database.getTableLength("VEHICULE");
+            listeVehicules=new String[nombreVehicules];
+            vehicules.first();
+            for (int i=0;i<nombreVehicules;i++){
+                nomVehicule=vehicules.getString("MARQUE")+" "+vehicules.getString("MODELE")+" "+vehicules.getInt("ANNEE");
+                listeVehicules[i]=nomVehicule;
+                vehicules.next();
+            }
+        }
+        catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+            nombreVehicules=1;
+            listeVehicules=new String[1];
+            listeVehicules[0]="";
+        }
+        setVehicule(listeVehicules);
+        if(!getClasseVehicule().equals("Utilitaire")){
+            if(getClasse().equals("1,2,3")||getClasse().equals("4,5")){
+                Controller.choixVehicule(vehiculeLocationPanel);
+            }
+            else{
+                Controller.cacherChoixVehicule(vehiculeLocationPanel);
+            }
+        }
+        else{
+            if(getClasse().equals("1,2,3")){
+                Controller.choixVehicule(vehiculeLocationPanel);
+            }
+            else{
+                Controller.cacherChoixVehicule(vehiculeLocationPanel);
+            }
+        }
     }//GEN-LAST:event_choixVehiculeButtonActionPerformed
 
     private void confirmerLocationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmerLocationButtonActionPerformed
+        int locationId=LocationDeVoiture.database.getTableLength("LOCATION")+1;
+        Client client=new Client();
+        int nombreClients=0;
+        nombreClients=LocationDeVoiture.database.getTableLength("CLIENT");
+        client.setClientId(nombreClients+1);
+        client.setNom(getNom());
+        client.setPrenom(getPrenom());
+        client.setAdresseCourriel(getCourriel());
+        client.setTelephone(getTelephone());
+        client.setNumeroPermis(getNumeroPermis());
+        client.setExpirationPermis(getDateExpiration());
+        client.setDateNaissance(getDateNaissance());
+        try {
+            LocationDeVoiture.database.AjouterClient(client);
+        } catch (Exception ex) {
+            Logger.getLogger(LocationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Vehicule vehicule=new Vehicule();
+        String[] infosVehicule=getVehiculeChoisi().split(" ");
+        ResultSet infosDBVehicule=LocationDeVoiture.database.obtainResultsFromQuery("SELECT * FROM VEHICULE WHERE MARQUE="+infosVehicule[0]+" AND MODELE="+infosVehicule[1]+" AND ANNEE="+infosVehicule[2]);
+        vehicule.setStatus(1);
+        vehicule.setMarque(infosVehicule[0]);
+        vehicule.setModele(infosVehicule[1]);
+        try{
+            vehicule.setAnnee(infosDBVehicule.getInt("ANNEE"));
+            vehicule.setVIN(infosDBVehicule.getString("VIN"));
+            vehicule.setKilometrage(infosDBVehicule.getInt("KILOMETRAGE"));
+            vehicule.setImmatriculation(infosDBVehicule.getString("IMMATRICULATION"));
+            vehicule.setTransmissionAutomatique(infosDBVehicule.getBoolean("TRANSMISSION"));
+            vehicule.setClasse(infosDBVehicule.getString("CLASSE"));
+            vehicule.setTailleReservoir(infosDBVehicule.getInt("TAILLE_RESERVOIRE"));
+        }
+        catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        Paiement paiement=new Paiement();
+        int methode=0;
+        if(getModePaiement().equals("Espece")){
+            methode=0;
+        }
+        else if(getModePaiement().equals("Debit")){
+            methode=1;
+        }
+        else if(getModePaiement().equals("Credit")){
+            methode=2;
+        }
+        paiement.setLocationId(locationId);
+        paiement.setMethode(methode);
+        paiement.setMontant(Double.parseDouble(getPremierPaiement()));
+        paiement.setDatePaiement(getDateDeLocation());
+        if(methode==0){
+            paiement.setRaison("300");
+        }
+        else{
+            paiement.setRaison("0");
+        }
+        try {
+            LocationDeVoiture.database.AjouterPaiement(paiement);
+        } catch (Exception ex) {
+            Logger.getLogger(LocationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Location location=new Location();
+        location.setLocationId(locationId);
+        location.setTempDepart(getDateDeLocation());
+        int jours=1;
+        if(getDureeLocation().equals("Jour")){
+            jours=1;
+        }
+        else if(getDureeLocation().equals("Semaine")){
+            jours=7;
+        }
+        else if(getDureeLocation().equals("mois")){
+            int mois=Integer.parseInt(getDateDeLocation().substring(3,5));
+            if(mois==1||mois==3||mois==5||mois==7||mois==8||mois==10||mois==12){
+                jours=31;
+            }
+            else if(mois==2){
+                int annee=Integer.parseInt(getDateDeLocation().substring(8,10));
+                if(annee%4==0){
+                    jours=29;
+                }
+                else{
+                    jours=28;
+                }
+            }
+            else{
+                jours=30;
+            }
+        }
+        location.setDateRetour((int) (location.getTempDepart().getTime()+TimeUnit.MILLISECONDS.convert(jours, TimeUnit.DAYS)));
+        location.setLocationALAvance(false);
+        location.setAnnulee(false);
+        location.setClient(client);
+        //location.setEmploye();
+        location.setVehicule(vehicule);
+        /*
+        try {
+            LocationDeVoiture.database.AjouterLocation(location);
+        } catch (Exception ex) {
+            Logger.getLogger(LocationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
+         */
+        Supplement supplement=new Supplement();
+        supplement.setLocationId(locationId);
+        int forfaitDistance=0;
+        if(getUsure().equals("illimité")){
+            forfaitDistance=1;
+        }
+        supplement.setForfaitDistance(forfaitDistance);
+        supplement.setEssenceManquant(0);
+        supplement.setHeuresDeRetard(0);
+        supplement.setReparations(0);
+        try {
+            LocationDeVoiture.database.AjouterSupplement(supplement);
+        } catch (Exception ex) {
+            Logger.getLogger(LocationPanel.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Controller.confirmationLocation(this, confirmer);
     }//GEN-LAST:event_confirmerLocationButtonActionPerformed
 
+    private Client client;
+    private Vehicule vehicule;
+    private Paiement paiement;
+    private Location location;
     private JPanel annuler;
     private JPanel confirmer;
     // Variables declaration - do not modify//GEN-BEGIN:variables

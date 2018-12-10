@@ -105,17 +105,9 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="classeComboBox" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="95" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="dureeComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="dateFormattedTextField" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="77" pref="77" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="classeComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="dureeComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="dateFormattedTextField" alignment="0" min="-2" pref="100" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
@@ -265,6 +257,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="500"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="km500ButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JRadioButton" name="kmIllimiteButton">
           <Properties>
@@ -488,6 +483,9 @@
             </Property>
             <Property name="text" type="java.lang.String" value="1,2,3"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="classe123RadioButtonActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JRadioButton" name="classe45RadioButton">
           <Properties>
@@ -582,6 +580,9 @@
               </StringArray>
             </Property>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="vehiculeDisponibleComboBoxActionPerformed"/>
+          </Events>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>

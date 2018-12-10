@@ -16,8 +16,8 @@ public class Paiement {
     private int locationId;
     /*
     0=Espece
-    1=credit
-    2=debit
+    1=debit
+    2=credit
      */
     private int methode;
     private double montant;

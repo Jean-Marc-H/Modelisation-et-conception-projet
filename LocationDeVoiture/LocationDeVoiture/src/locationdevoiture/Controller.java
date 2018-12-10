@@ -71,6 +71,11 @@ public class Controller {
         vehicule.setVisible(true);
     }
     
+    public static void cacherChoixVehicule(JPanel vehicule)
+    {
+        vehicule.setVisible(false);
+    }
+    
     public static void paiement(JButton confirmation)
     {
         confirmation.setVisible(true);

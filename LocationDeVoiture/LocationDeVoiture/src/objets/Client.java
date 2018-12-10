@@ -5,6 +5,9 @@
  */
 package objets;
 
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  *
  * @author JeanMarc
@@ -13,10 +16,11 @@ public class Client {
     private int clientId;
     private String nom;
     private String prenom;
-    private String adresse;
+    private String adresseCourriel;
     private String telephone;
     private String numeroPermis;
-    private int age;
+    private Date expirationPermis;
+    private Date dateNaissance;
     
     
     public void setClientId(int id){
@@ -43,14 +47,6 @@ public class Client {
         return this.prenom;
     }
     
-    public void setAdresse(String adresse){
-        this.adresse=adresse;
-    }
-    
-    public String getAdresse(){
-        return this.adresse;
-    }
-    
     public void setTelephone(String telephone){
         this.telephone=telephone;
     }
@@ -58,20 +54,48 @@ public class Client {
     public String getTelephone(){
         return this.telephone;
     }
-    
-    public void setNumeroPermis(String permis){
-        this.numeroPermis=permis;
+
+    public String getAdresseCourriel() {
+        return adresseCourriel;
+    }
+
+    public void setAdresseCourriel(String adresseCourriel) {
+        this.adresseCourriel = adresseCourriel;
+    }
+
+    public String getNumeroPermis() {
+        return numeroPermis;
+    }
+
+    public void setNumeroPermis(String numeroPermis) {
+        this.numeroPermis = numeroPermis;
+    }
+
+    public void setExpirationPermis(Date expirationPermis) {
+        this.expirationPermis = expirationPermis;
+    }
+
+    public void setDateNaissance(Date dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
+
+    public void setExpirationPermis(String date){
+        Calendar calendar=Calendar.getInstance();
+        calendar.set(Integer.parseInt(date.substring(0,2)),Integer.parseInt(date.substring(3,5)), Integer.parseInt(date.substring(6,10)));
+        this.expirationPermis=calendar.getTime();
     }
     
-    public String getNumeroPermis(){
-        return this.numeroPermis;
+    public Date getExpirationPermis(){
+        return this.expirationPermis;
     }
     
-    public void setAge(int age){
-        this.age=age;
+    public void setDateNaissance(String date){
+        Calendar calendar=Calendar.getInstance();
+        calendar.set(Integer.parseInt(date.substring(0,2)),Integer.parseInt(date.substring(3,5)), Integer.parseInt(date.substring(6,10)));
+        this.dateNaissance=calendar.getTime();
     }
     
-    public int getAge(){
-        return this.age;
+    public Date getDateNaissance(){
+        return this.dateNaissance;
     }
 }

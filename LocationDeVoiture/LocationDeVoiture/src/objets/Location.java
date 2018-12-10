@@ -31,10 +31,8 @@ public class Location {
         return this.locationId;
     }
     
-    public void setDateRetour(String date){
-        Calendar calendar=Calendar.getInstance();
-        calendar.set(Integer.parseInt(date.substring(0,2)),Integer.parseInt(date.substring(3,5)), Integer.parseInt(date.substring(6,10)));
-        this.dateRetour=calendar.getTime();
+    public void setDateRetour(int millis){
+        this.dateRetour=new Date(millis);
     }
     
     public Date getDateRetour(){
